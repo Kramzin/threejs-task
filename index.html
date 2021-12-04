@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body {
+            background-color: grey;
+            margin: 0;
+            }
+            a {
+            color: black;
+            border-bottom: 3px solid black;
+            }
+            .live-list {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            bottom: 5px;
+            padding-left: 2px;
+            background: white;
+            color: blue;
+            }
+            .controls {
+            padding-top: 10px;
+            padding-left: 5px;
+            position: absolute;
+            display: flex;
+            justify-content: flex-start;
+            }
+            /* Dropdown Button */
+            .dropbtn {
+            background-color: white;
+            color: black;
+            min-width: 150px;
+            padding: 5px;
+            font-size: 18px;
+            border: none;
+            border-radius: 3px;
+            }
+            /* The container <div> - needed to position the dropdown content */
+            .dropdown {
+            display: inline-block;
+            }
+            /* Dropdown Content (Hidden by Default) */
+            .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 150px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 3px;
+            }
+            /* Links inside the dropdown */
+            .dropdown-content a {
+            color: black;
+            padding: 5px 5px;
+            text-decoration: none;
+            display: block;
+            font-size: 18px;
+            }
+            /* Change color of dropdown links on hover */
+            .dropdown-content a:hover {background-color: #ddd;}
+            /* Show the dropdown menu on hover */
+            .dropdown:hover .dropdown-content {display: block;}
+            /* Change the background color of the dropdown button when the dropdown content is shown */
+            .dropdown:hover .dropbtn {background-color: #9aa39a;}
+            .scalar-input {
+            font-size: 18px;
+            max-width: 150px;
+            margin-right: 15px;
+            padding: 5px;
+            border-radius: 3px;
+            }
+            .createbtn {
+            min-width: 150px;
+            font-size: 18px;
+            border-radius: 3px;
+            margin-left: 15px;
+            padding: 5px;
+            }
+		</style>
+	</head>
+	<body>
+        <a class="live-list" id="myList">
+          </a>
+
+        <div class="controls">
+            <form>
+                <input class="scalar-input" type="text" id="params" placeholder="2,2,2" />
+                <div class="dropdown">
+                    <select class="dropbtn" id="geometry">
+                        <option value="cube">Cube</option>
+                        <option value="sphere">Sphere</option>
+                        <option value="pyramid">Pyramid</option>
+                    </select>
+                    <Button id="createButton" class="createbtn"> CREATE </Button>
+
+                </div>
+            </form>
+        </div>
+        <script type="module">
+
+            import * as THREE from "https://threejs.org/build/three.module.js";
+            import { OrbitControls } from "https://threejs.org/examples/jsm/controls/OrbitControls.js";
+
+            // Receiving scalars
+            let x;
+            let scalars;
+            var a,b,c;
+            const params = document.querySelector('input');
+            const log = document.getElementById('values');
+            params.addEventListener('input', showParams);
+            function showParams(e) {
+            scalars = e.target.value;
+            if(typeof scalars === "string"){
+                scalars = scalars.split(",");
+                a = scalars[0];
+                b = scalars[1];
+                c = scalars[2];
+            }
+            }
+
+            // Receiving shape
+            const btn = document.querySelector('#createButton');
+            const shape = document.querySelector('#geometry')
+            btn.onclick = (event) => {
+            event.preventDefault();
+            createFigure(shape.value, a,b,c);
+            };
+
+            var mesh, renderer, scene, camera, controls;
+
+            init();
+            animate();
+
+    
+            //Creating figure based on received data
+            function createFigure(shape, a,b,c) {
+
+                if(shape == "sphere"){
+                var geometry = new THREE.SphereGeometry(a,b,c);
+                }
+                if(shape == "cube") {
+                var geometry = new THREE.BoxGeometry(a,b,c);
+                }
+                if(shape == "pyramid")
+                var geometry = new THREE.ConeGeometry(a,b,c);
+                // material
+                var material = new THREE.MeshPhongMaterial( {
+                    color: 0x00ffff, 
+                    flatShading: true,
+                    transparent: true,
+                    opacity: 1,
+                } );
+
+                // mesh
+                mesh = new THREE.Mesh( geometry, material );
+                mesh.name="quadrant";
+                mesh.position.x = Math.random() * 2 - 1;
+                mesh.position.y = Math.random() + 0.15;
+                mesh.position.z = Math.random() * 2 - 1;
+                // ( Math.random() - 0.5) * 1000; // alternative gives us negative numbers 
+                mesh.position.multiplyScalar( 10 );
+                scene.add( mesh );
+                console.log(scene);
+                
+
+
+
+                // setStyles(mesh.uuid);
+                var node = document.createElement("a");
+                var textnode = document.createTextNode(mesh.uuid);
+                node.appendChild(textnode);
+                node.setAttribute("id", "uuidList");
+                node.setAttribute("value", mesh.uuid);
+                document.getElementById("myList").appendChild(node);
+                }
+
+            function init() {
+
+                // renderer
+                renderer = new THREE.WebGLRenderer({alpha: true});
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.setPixelRatio( window.devicePixelRatio );
+                document.body.appendChild( renderer.domElement );
+
+
+                // scene
+                scene = new THREE.Scene();
+                
+                // camera
+                camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.set( 30, 20, 20 );
+
+                // controls
+                controls = new OrbitControls( camera, renderer.domElement );
+                
+                // ambient
+                scene.add( new THREE.AmbientLight( 0x222222 ) );
+                
+                // grid
+                const size = 100;
+                const divisions = 100;
+
+                const gridHelper = new THREE.GridHelper( size, divisions );
+                scene.add( gridHelper );
+
+                // light
+                var light = new THREE.DirectionalLight( 0xffffff, 1 );
+                light.position.set( 20, 20, 0 );
+                scene.add( light );
+                createFigure();
+
+            }
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+                
+                //controls.update();
+
+                renderer.render( scene, camera );
+
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            window.addEventListener("resize", onWindowResize, false);
+
+            const btnd = document.querySelector('#myList');
+            btnd.onclick = (event) => {
+            event.preventDefault();
+            let i = 2;
+            x = document.getElementsByTagName("a")[i].getAttribute("value");
+            var element = document.getElementsByTagName("a");
+            element[i].parentNode.removeChild(element[i]);
+            i++;
+            console.log(x);
+            console.log(scene);
+            const object = scene.getObjectByProperty( 'uuid', x);
+            object.geometry.dispose();
+            object.material.dispose();
+            scene.remove( object );
+            };
+
+          </script>
+	</body>
+</html>
