@@ -11,6 +11,10 @@
             a {
             color: black;
             border-bottom: 3px solid black;
+            cursor: pointer;
+            }
+            a::after {
+                content:'\274C'
             }
             .live-list {
             position: absolute;
@@ -85,7 +89,6 @@
 	<body>
         <a class="live-list" id="myList">
           </a>
-
         <div class="controls">
             <form>
                 <input class="scalar-input" type="text" id="params" placeholder="2,2,2" />
@@ -100,9 +103,16 @@
                 </div>
             </form>
         </div>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://threejs.org/build/three.module.js"
+                }
+            }
+        </script>   
         <script type="module">
 
-            import * as THREE from "https://threejs.org/build/three.module.js";
+            import * as THREE from "three";
             import { OrbitControls } from "https://threejs.org/examples/jsm/controls/OrbitControls.js";
 
             // Receiving scalars
